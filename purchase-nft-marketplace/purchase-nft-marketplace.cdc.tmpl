@@ -17,10 +17,10 @@ transaction(listingResourceID: UInt64, storefrontAddress: Address, expectedPrice
 
     prepare(dapper: AuthAccount, buyer: AuthAccount) {
         // Initialize the buyer's collection if they do not already have one
-        if buyer.borrow<&${NFTContractName}.Collection>(from: ${NFTContractName}.CollectionStoragePath) == nil {
+        if buyer.borrow<&{${NFTContractName}.${NFTContractName}CollectionPublic}>(from: ${NFTContractName}.CollectionStoragePath) == nil {
             let collection <- ${NFTContractName}.createEmptyCollection() as! @${NFTContractName}.Collection
             buyer.save(<-collection, to: ${NFTContractName}.CollectionStoragePath)
-            buyer.link<&{${NFTContractName}.CollectionPublic}>(
+            buyer.link<&{${NFTContractName}.${NFTContractName}CollectionPublic, NonFungibleToken.CollectionPublic}>(
                 ${NFTContractName}.CollectionPublicPath,
                 target: ${NFTContractName}.CollectionStoragePath,
             )
