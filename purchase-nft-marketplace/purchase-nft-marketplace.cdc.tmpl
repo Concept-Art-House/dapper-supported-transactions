@@ -20,7 +20,7 @@ transaction(listingResourceID: UInt64, storefrontAddress: Address, expectedPrice
         if buyer.borrow<&{${NFTContractName}.${NFTContractName}CollectionPublic}>(from: ${NFTContractName}.CollectionStoragePath) == nil {
             let collection <- ${NFTContractName}.createEmptyCollection() as! @${NFTContractName}.Collection
             buyer.save(<-collection, to: ${NFTContractName}.CollectionStoragePath)
-            buyer.link<&{${NFTContractName}.${NFTContractName}CollectionPublic, NonFungibleToken.CollectionPublic}>(
+            buyer.link<&${NFTContractName}.Collection{${NFTContractName}.${NFTContractName}CollectionPublic, NonFungibleToken.CollectionPublic}>(
                 ${NFTContractName}.CollectionPublicPath,
                 target: ${NFTContractName}.CollectionStoragePath,
             )
