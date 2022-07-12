@@ -28,7 +28,8 @@ transaction(saleItemID: UInt64, saleItemPrice: UFix64, royaltyPercent: UFix64) {
         }
 
         // Get a reference to the receiver that will receive the fungible tokens if the sale executes.
-        self.sellerPaymentReceiver = seller.getCapability<&{FungibleToken.Receiver}>(/public/dapperUtilityCoinReceiver)
+        // Note that the sales receiver aka MerchantAddress should be an account owned by Dapper or an end-user Dapper Wallet account address.
+        self.sellerPaymentReceiver = getAccount(${MerchantAddress}).getCapability<&{FungibleToken.Receiver}>(/public/dapperUtilityCoinReceiver)
         assert(self.sellerPaymentReceiver.borrow() != nil, message: "Missing or mis-typed DapperUtilityCoin receiver")
 
         // If the user does not have their collection linked to their account, link it.
@@ -52,17 +53,6 @@ transaction(saleItemID: UInt64, saleItemPrice: UFix64, royaltyPercent: UFix64) {
         // Get a reference to the user's NFT storefront
         self.storefront = seller.borrow<&NFTStorefront.Storefront>(from: NFTStorefront.StorefrontStoragePath)
             ?? panic("Missing or mis-typed NFTStorefront Storefront")
-
-        // Make sure this NFT is not already listed for sale in this storefront.
-        let existingOffers = self.storefront.getListingIDs()
-        if existingOffers.length > 0 {
-            for listingResourceID in existingOffers {
-                let listing: &NFTStorefront.Listing{NFTStorefront.ListingPublic}? = self.storefront.borrowListing(listingResourceID: listingResourceID)
-                if listing != nil && listing!.getDetails().nftID == saleItemID && listing!.getDetails().nftType == Type<@${NFTContractName}.NFT>(){
-                    self.storefront.removeListing(listingResourceID: listingResourceID)
-                }
-            }
-        }
     }
 
     // Make sure dapp is actually the dapp and not some random account
@@ -77,6 +67,7 @@ transaction(saleItemID: UInt64, saleItemPrice: UFix64, royaltyPercent: UFix64) {
         let amountRoyalty = saleItemPrice - amountSeller
 
         // Get the royalty recipient's public account object
+        // Note that the royalty receiver should be an account owned by Dapper (aka MerchantAddress) or an end-user Dapper Wallet account address.
         let royaltyRecipient = getAccount(${RoyaltyReceiverAddress})
 
         // Get a reference to the royalty recipient's Receiver
